@@ -2,12 +2,18 @@ from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from datetime import datetime
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
 CORS(app)
 
-# 🔗 MongoDB Atlas Connection
-client = MongoClient("mongodb+srv://vikash:Vikash%40123@finalproject.x1lkbx3.mongodb.net/?appName=FinalProject")
+# 🔗 MongoDB Atlas Connection (ENV BASED)
+mongo_uri = os.environ.get("MONGO_URI")
+
+if not mongo_uri:
+    raise Exception("❌ MONGO_URI not set")
+
+client = MongoClient(mongo_uri)
 db = client["smart_agri"]
 
 # -------------------------------
@@ -20,7 +26,6 @@ def receive_data():
 
         print("📩 Received:", data)
 
-        # Store in database
         db.sensor_data.insert_one({
             "soil": data['soil'],
             "temp": data['temp'],
@@ -30,7 +35,6 @@ def receive_data():
             "timestamp": datetime.now()
         })
 
-        # 🔧 Basic Decision Logic
         if data['rain'] < 2000:
             decision = "PUMP_OFF"
         elif data['soil'] > 2000 or data['temp'] > 30:
@@ -71,10 +75,8 @@ def home():
 
 
 # -------------------------------
-# ▶️ RUN SERVER
+# ▶️ RUN SERVER (FIXED)
 # -------------------------------
 if __name__ == '__main__':
-    import os
-
-port = int(os.environ.get("PORT", 5000))
-app.run(host='0.0.0.0', port=port)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
