@@ -53,8 +53,20 @@ def receive_data():
 # -------------------------------
 @app.route('/api/latest', methods=['GET'])
 def get_latest():
-    data = db.sensor_data.find().sort("timestamp", -1).limit(1)
-    return jsonify(list(data))
+
+    latest = db.sensor_data.find_one(
+        sort=[("timestamp", -1)]
+    )
+
+    if latest:
+
+        latest["_id"] = str(latest["_id"])
+
+        return jsonify(latest)
+
+    return jsonify({
+        "message": "No data found"
+    })
 
 
 # -------------------------------
@@ -62,8 +74,17 @@ def get_latest():
 # -------------------------------
 @app.route('/api/history', methods=['GET'])
 def get_history():
-    data = db.sensor_data.find().sort("timestamp", -1).limit(50)
-    return jsonify(list(data))
+
+    data = list(
+        db.sensor_data.find()
+        .sort("timestamp", -1)
+        .limit(50)
+    )
+
+    for item in data:
+        item["_id"] = str(item["_id"])
+
+    return jsonify(data)
 
 
 # -------------------------------
