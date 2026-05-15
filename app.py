@@ -15,6 +15,15 @@ if not mongo_uri:
 
 client = MongoClient(mongo_uri)
 db = client["smart_agri"]
+control_collection = db["control"]
+
+if control_collection.count_documents({}) == 0:
+
+    control_collection.insert_one({
+        "pump": "OFF",
+        "buzzer": "OFF",
+        "auto_mode": True
+    })
 
 # -------------------------------
 # 📩 API 1: Receive ESP32 Data
@@ -86,6 +95,41 @@ def get_history():
 
     return jsonify(data)
 
+# -------------------------------
+# 🎮 API 4: Update Controls
+# -------------------------------
+@app.route('/api/control', methods=['POST'])
+def update_control():
+
+    data = request.json
+
+    control_collection.update_one(
+        {},
+        {
+            "$set": {
+                "pump": data.get("pump", "OFF"),
+                "buzzer": data.get("buzzer", "OFF"),
+                "auto_mode": data.get("auto_mode", True)
+            }
+        }
+    )
+
+    return jsonify({
+        "message": "Control updated"
+    })
+
+
+# -------------------------------
+# 📡 API 5: Get Controls
+# -------------------------------
+@app.route('/api/control', methods=['GET'])
+def get_control():
+
+    control = control_collection.find_one()
+
+    control["_id"] = str(control["_id"])
+
+    return jsonify(control)
 
 # -------------------------------
 # 🧪 TEST API
