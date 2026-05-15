@@ -98,33 +98,32 @@ def get_history():
 # -------------------------------
 # 🎮 API 4: Update Controls
 # -------------------------------
+
 @app.route('/api/control', methods=['POST'])
 def update_control():
 
     data = request.json
-
     update_fields = {}
 
-if data.get("pump") is not None:
-    update_fields["pump"] = data["pump"]
+    if data.get("pump") is not None:
+        update_fields["pump"] = data["pump"]
 
-if data.get("buzzer") is not None:
-    update_fields["buzzer"] = data["buzzer"]
+    if data.get("buzzer") is not None:
+        update_fields["buzzer"] = data["buzzer"]
 
-if data.get("auto_mode") is not None:
-    update_fields["auto_mode"] = data["auto_mode"]
+    if data.get("auto_mode") is not None:
+        update_fields["auto_mode"] = data["auto_mode"]
 
+    control_collection.update_one(
+        {},
+        {
+            "$set": update_fields
+        }
+    )
 
-control_collection.update_one(
-    {},
-    {
-        "$set": update_fields
-    }
-)
     return jsonify({
         "message": "Control updated"
     })
-
 
 # -------------------------------
 # 📡 API 5: Get Controls
