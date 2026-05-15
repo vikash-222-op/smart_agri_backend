@@ -103,17 +103,24 @@ def update_control():
 
     data = request.json
 
-    control_collection.update_one(
-        {},
-        {
-            "$set": {
-                "pump": data.get("pump", "OFF"),
-                "buzzer": data.get("buzzer", "OFF"),
-                "auto_mode": data.get("auto_mode", True)
-            }
-        }
-    )
+    update_fields = {}
 
+if data.get("pump") is not None:
+    update_fields["pump"] = data["pump"]
+
+if data.get("buzzer") is not None:
+    update_fields["buzzer"] = data["buzzer"]
+
+if data.get("auto_mode") is not None:
+    update_fields["auto_mode"] = data["auto_mode"]
+
+
+control_collection.update_one(
+    {},
+    {
+        "$set": update_fields
+    }
+)
     return jsonify({
         "message": "Control updated"
     })
