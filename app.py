@@ -148,7 +148,7 @@ def weather():
         "sunrise,"
         "sunset"
 
-        "&forecast_days=7"
+        "&forecast_days=10"
     )
 
     response = requests.get(url)
