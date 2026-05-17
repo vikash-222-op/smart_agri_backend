@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from datetime import datetime
 from flask_cors import CORS
 import os
+import requests
 
 app = Flask(__name__)
 CORS(app)
@@ -115,6 +116,59 @@ def get_history():
 
     return jsonify(data)
 
+# ==========================
+# WEATHER API
+# ==========================
+
+@app.route(
+"/api/weather",
+methods=["GET"]
+)
+
+def weather():
+
+    latitude = "25.5941"
+    longitude = "85.1376"
+
+    url = (
+
+"https://api.open-meteo.com/v1/forecast"
+
+f"?latitude={latitude}"
+
+f"&longitude={longitude}"
+
+"&current="
+"temperature_2m,"
+"relative_humidity_2m,"
+"weather_code,"
+"wind_speed_10m"
+
+"&hourly="
+"temperature_2m,"
+"precipitation_probability,"
+"weather_code"
+
+"&daily="
+"weather_code,"
+"temperature_2m_max,"
+"temperature_2m_min,"
+"sunrise,"
+"sunset,"
+"precipitation_probability_max"
+
+"&forecast_days=7"
+
+    )
+
+    response =
+    requests.get(url)
+
+    data =
+    response.json()
+
+    return jsonify(data)
+    
 # -------------------------------
 # 🎮 API 4: Update Controls
 # -------------------------------
