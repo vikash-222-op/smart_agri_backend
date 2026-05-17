@@ -36,13 +36,33 @@ def receive_data():
         print("📩 Received:", data)
 
         db.sensor_data.insert_one({
-            "soil": data['soil'],
-            "temp": data['temp'],
-            "humidity": data['humidity'],
-            "rain": data['rain'],
-            "motion": data['motion'],
-            "timestamp": datetime.now()
-        })
+
+"soil": data['soil'],
+
+"temp": data['temp'],
+
+"humidity": data['humidity'],
+
+"rain": data['rain'],
+
+"motion": data['motion'],
+
+"pump_status":
+data.get(
+"pump_status",
+"OFF"
+),
+
+"day_mode":
+data.get(
+"day_mode",
+"DAY"
+),
+
+"timestamp":
+datetime.now()
+
+})
 
         if data['rain'] < 2000:
             decision = "PUMP_OFF"
