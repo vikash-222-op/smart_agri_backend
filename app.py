@@ -20,10 +20,10 @@ control_collection = db["control"]
 if control_collection.count_documents({}) == 0:
 
     control_collection.insert_one({
-        "pump": "OFF",
-        "buzzer": "OFF",
-        "auto_mode": True
-    })
+    "pump": "OFF",
+    "buzzer": "ON",
+    "auto_mode": True
+})
 
 # -------------------------------
 # 📩 API 1: Receive ESP32 Data
