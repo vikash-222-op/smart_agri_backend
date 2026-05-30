@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from datetime import datetime
@@ -26,6 +27,15 @@ if control_collection.count_documents({}) == 0:
     "auto_mode": True
 })
 
+BOT_TOKEN = "8737343680:AAGxRyrvaKo2Wx9emSz76k0UZjjKFK1r1G0"
+CHAT_ID = "899994439"
+
+# Telegram Anti-Spam
+last_motion_alert = False
+last_soil_alert = False
+last_rain_alert = False
+
+
 # -------------------------------
 # 📩 API 1: Receive ESP32 Data
 # -------------------------------
@@ -35,6 +45,10 @@ def receive_data():
         data = request.json
 
         print("📩 Received:", data)
+
+        global last_motion_alert
+global last_soil_alert
+global last_rain_alert
 
         db.sensor_data.insert_one({
 
@@ -65,6 +79,60 @@ datetime.now()
 
 })
 
+# =========================
+# TELEGRAM ALERTS
+# =========================
+
+# Motion Alert
+
+if data["motion"] == 1:
+
+    if not last_motion_alert:
+
+        send_telegram(
+            "🚨 SECURITY ALERT\n\nMotion detected in field."
+        )
+
+        last_motion_alert = True
+
+else:
+
+    last_motion_alert = False
+
+
+# Soil Alert
+
+if data["soil"] > 2500:
+
+    if not last_soil_alert:
+
+        send_telegram(
+            f"🌱 LOW SOIL MOISTURE ALERT\n\nCurrent Value: {data['soil']}"
+        )
+
+        last_soil_alert = True
+
+else:
+
+    last_soil_alert = False
+
+
+# Rain Alert
+
+if data["rain"] < 2000:
+
+    if not last_rain_alert:
+
+        send_telegram(
+            "🌧 RAIN DETECTED\n\nPump may stop automatically."
+        )
+
+        last_rain_alert = True
+
+else:
+
+    last_rain_alert = False    
+        
         if data['rain'] < 2000:
             decision = "PUMP_OFF"
         elif data['soil'] > 2000 or data['temp'] > 30:
@@ -156,7 +224,26 @@ def weather():
     data = response.json()
 
     return jsonify(data)
-    
+
+
+# Telegram
+def send_telegram(message):
+
+    try:
+
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+
+        payload = {
+            "chat_id": CHAT_ID,
+            "text": message
+        }
+
+        requests.post(url, json=payload)
+
+    except Exception as e:
+
+        print("Telegram Error:", e)
+
 # -------------------------------
 # 🎮 API 4: Update Controls
 # -------------------------------
@@ -198,6 +285,15 @@ def get_control():
     control["_id"] = str(control["_id"])
 
     return jsonify(control)
+
+@app.route('/api/test-telegram')
+def test_telegram():
+
+    send_telegram(
+        "✅ Telegram Notification System Working"
+    )
+
+    return "Telegram Message Sent"
 
 # -------------------------------
 # 🧪 TEST API
