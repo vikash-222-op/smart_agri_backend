@@ -47,8 +47,8 @@ def receive_data():
         print("📩 Received:", data)
 
         global last_motion_alert
-global last_soil_alert
-global last_rain_alert
+        global last_soil_alert
+        global last_rain_alert
 
         db.sensor_data.insert_one({
 
