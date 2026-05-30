@@ -30,10 +30,7 @@ if control_collection.count_documents({}) == 0:
 BOT_TOKEN = "8737343680:AAGxRyrvaKo2Wx9emSz76k0UZjjKFK1r1G0"
 CHAT_ID = "899994439"
 
-# Telegram Anti-Spam
-last_motion_alert = False
-last_soil_alert = False
-last_rain_alert = False
+
 
 
 # -------------------------------
@@ -41,108 +38,51 @@ last_rain_alert = False
 # -------------------------------
 @app.route('/api/data', methods=['POST'])
 def receive_data():
+
     try:
+
         data = request.json
 
         print("📩 Received:", data)
 
-        global last_motion_alert
-        global last_soil_alert
-        global last_rain_alert
-
         db.sensor_data.insert_one({
 
-"soil": data['soil'],
+            "soil": data['soil'],
+            "temp": data['temp'],
+            "humidity": data['humidity'],
+            "rain": data['rain'],
+            "motion": data['motion'],
 
-"temp": data['temp'],
+            "pump_status":
+            data.get(
+                "pump_status",
+                "OFF"
+            ),
 
-"humidity": data['humidity'],
+            "day_mode":
+            data.get(
+                "day_mode",
+                "DAY"
+            ),
 
-"rain": data['rain'],
+            "timestamp":
+            datetime.now()
 
-"motion": data['motion'],
+        })
 
-"pump_status":
-data.get(
-"pump_status",
-"OFF"
-),
-
-"day_mode":
-data.get(
-"day_mode",
-"DAY"
-),
-
-"timestamp":
-datetime.now()
-
-})
-
-# =========================
-# TELEGRAM ALERTS
-# =========================
-
-# Motion Alert
-
-if data["motion"] == 1:
-
-    if not last_motion_alert:
-
-        send_telegram(
-            "🚨 SECURITY ALERT\n\nMotion detected in field."
-        )
-
-        last_motion_alert = True
-
-else:
-
-    last_motion_alert = False
-
-
-# Soil Alert
-
-if data["soil"] > 2500:
-
-    if not last_soil_alert:
-
-        send_telegram(
-            f"🌱 LOW SOIL MOISTURE ALERT\n\nCurrent Value: {data['soil']}"
-        )
-
-        last_soil_alert = True
-
-else:
-
-    last_soil_alert = False
-
-
-# Rain Alert
-
-if data["rain"] < 2000:
-
-    if not last_rain_alert:
-
-        send_telegram(
-            "🌧 RAIN DETECTED\n\nPump may stop automatically."
-        )
-
-        last_rain_alert = True
-
-else:
-
-    last_rain_alert = False    
-        
         if data['rain'] < 2000:
             decision = "PUMP_OFF"
+
         elif data['soil'] > 2000 or data['temp'] > 30:
             decision = "PUMP_ON"
+
         else:
             decision = "PUMP_OFF"
 
         return decision
 
     except Exception as e:
+
         return str(e)
 
 
